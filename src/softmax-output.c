@@ -86,3 +86,45 @@ enum nnp_status nnp_softmax_output(
 
 	return nnp_status_success;
 }
+
+
+
+enum nnp_status nnp_log_softmax_output(
+	size_t batch_size,
+	size_t channels,
+	const float* input,
+	float* output,
+	pthreadpool_t threadpool)
+{
+	enum nnp_status status = validate_softmax_arguments(batch_size, channels);
+	if (status != nnp_status_success) {
+		return status;
+	}
+
+	if (input != output) {
+		/* Out-of-place softmax */
+		struct softmax_context softmax_context = {
+			.softmax_function = nnp_log_softmax__avx2,
+			.channels = channels,
+			.input = input,
+			.output = output,
+		};
+		pthreadpool_compute_1d(threadpool,
+			(pthreadpool_function_1d_t) compute_softmax_output,
+			&softmax_context,
+			batch_size);
+	} else {
+		/* In-place softmax */
+		struct inplace_softmax_context inplace_softmax_context = {
+			.softmax_function = nnp_inplace_log_softmax__avx2,
+			.channels = channels,
+			.data = output,
+		};
+		pthreadpool_compute_1d(threadpool,
+			(pthreadpool_function_1d_t) compute_inplace_softmax_output,
+			&inplace_softmax_context,
+			batch_size);
+	}
+
+	return nnp_status_success;
+}

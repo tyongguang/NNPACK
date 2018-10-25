@@ -1,7 +1,6 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <math.h>
-
 #include <nnpack/utils.h>
 #include <nnpack/softmax.h>
 
@@ -29,4 +28,29 @@ void nnp_inplace_softmax__avx2(
 	const float sum = sum_exp_minus_c__avx2(n, v, c);
 	const float scale = 1.0f / sum;
 	inplace_scaled_exp_minus_c__avx2(n, v, scale, c);
+}
+
+void nnp_log_softmax__avx2(
+	size_t n,
+	const float x[restrict static n],
+	float y[restrict static n])
+{
+	const float c = max__avx(n, x);
+	const float sum = sum_exp_minus_c__avx2(n, x, c);
+	const float ls = log(sum) + c;
+    for(int i = 0;i < n ; i++) {
+        y[i] = x[i] - ls;
+    }
+}
+
+void nnp_inplace_log_softmax__avx2(
+	size_t n,
+	float v[restrict static n])
+{
+	const float c = max__avx(n, v);
+	const float sum = sum_exp_minus_c__avx2(n, v, c);
+	const float ls = log(sum) + c;
+    for(int i = 0;i < n ; i++) {
+        v[i] = v[i] - ls;
+    }
 }

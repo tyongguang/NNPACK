@@ -12,6 +12,8 @@ void nnp_vector_exp__psimd(size_t n, const float* x, float* y);
 
 void nnp_softmax__avx2(size_t n, const float* x, float* y);
 void nnp_inplace_softmax__avx2(size_t n, float* v);
+void nnp_log_softmax__avx2(size_t n, const float* x, float* y);
+void nnp_inplace_log_softmax__avx2(size_t n, float* v);
 
 void nnp_softmax__psimd(size_t n, const float* x, float* y);
 void nnp_inplace_softmax__psimd(size_t n, float* v);
